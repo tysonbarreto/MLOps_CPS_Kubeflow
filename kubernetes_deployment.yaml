@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: CPSapp
+  name: cpsapp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: CPSapp
+      app: cpsapp
   template:
     metadata:
       labels:
-        app: CPSapp
+        app: cpsapp
     spec:
       containers:
-      - name: CPSapp
+      - name: cpsapp
         #imagePullPolicy: IfNotPresent #look for locally present image, if not present in gcp artifact repo
         image: us-central1-docker.pkg.dev/mlopshrp/my-repo/cpsapp:latest
         ports:
@@ -23,10 +23,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: CPSapp
+  name: cpsapp
 spec:
   selector:
-    app: CPSapp
+    app: cpsapp
   ports:
   - protocol: TCP
     port: 80
