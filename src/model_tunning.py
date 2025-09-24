@@ -1,6 +1,6 @@
 import optuna
 from optuna import trial
-from hyperopt import hp
+
 import mlflow
 import joblib
 import os, sys
@@ -21,6 +21,10 @@ optuna.logging.set_verbosity(optuna.logging.ERROR)
 
 trainer = ModelTraining()
 
+os.environ['MLFLOW_TRACKING_URI'] = os.getenv('MLFLOW_TRACKING_URI')
+os.environ['MLFLOW_TRACKING_USERNAME'] = os.getenv('MLFLOW_TRACKING_USERNAME')
+os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('MLFLOW_TRACKING_PASSWORD')
+
 def champion_callback(study:optuna.study.Study, frozen_trial:optuna.trial.FrozenTrial):
     winner = study.user_attrs.get('winner',None)
     if study.best_value and winner != study.best_value:
@@ -35,22 +39,21 @@ def champion_callback(study:optuna.study.Study, frozen_trial:optuna.trial.Frozen
         else:
             logger.info(f"Initial trial {frozen_trial.number} achieved value: {frozen_trial.value}")
             
-def objective():
-    mlflow.sklearn.autolog()
-    with mlflow.start_run(nested=True) as child_run:
+def objective(trial):
+    with mlflow.start_run(nested=True):
         
         params = {
-            "objective": "classification:roc_auc_score",
-            "eval_metric": "roc_auc_score",
-            "n_estimators": trial.suggest_int("n_estimators",10,100,log=True),  #("booster", ["gbtree", "gblinear", "dart"]),
-            "learning_rate": trial.suggest_uniform("learning_rate", 0.1, 1.0, log=True),
+            "n_estimators": trial.suggest_int("n_estimators",10,100),  #("booster", ["gbtree", "gblinear", "dart"]),
+            "learning_rate": trial.suggest_float("learning_rate", 0.1, 1.0, log=True),
             "max_depth": trial.suggest_int("max_depth", 1, 5, log=True),
         }
         
         roc_auc = trainer.run(params=params, hyperparameter_tunning=True)
+
         mlflow.log_params(params)
         mlflow.log_metric("roc_auc", roc_auc)
         
+
     return roc_auc
 
 def tune_parameters(experiment_name:str):
@@ -63,7 +66,7 @@ def tune_parameters(experiment_name:str):
     with mlflow.start_run(experiment_id=experiment_id, run_name=run_name, nested=True) as parent_run:
         study = optuna.create_study(direction='minimize')
         
-        study.optimize(func=objective, n_trials=10, callbacks=[champion_callback])
+        study.optimize(func=objective, n_trials=5, callbacks=[champion_callback])
         
         mlflow.log_params(study.best_params)
         mlflow.log_metric("roc_auc",study.best_value)
@@ -77,19 +80,22 @@ def tune_parameters(experiment_name:str):
             }
         )
 
-        _, model, signature = trainer.run(params=study.best_params)
+        _, model, signature = trainer.run(params=study.best_params, return_model=True)
         
         artifact_path = "model"
 
         X_train = joblib.load(os.path.join("artifacts/processed" , "X_train.pkl"))
         mlflow.sklearn.log_model(
             sk_model=model,
-            name=artifact_path,
+            artifact_path=artifact_path,
             signature=signature,
-            model_format="ubj",
             metadata={"model_data_version": 1},
+            registered_model_name='cancer_prediction_model'
         )
+        
         model_uri = mlflow.get_artifact_uri(artifact_path)
+        logger.info(f"model uri: {model_uri}")
+        return model_uri
     
 if __name__=="__main__":
     tune_parameters(experiment_name="cancer_detection_experiment")

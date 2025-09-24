@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: CPSapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: CPSapp
+  template:
+    metadata:
+      labels:
+        app: CPSapp
+    spec:
+      containers:
+      - name: CPSapp
+        #imagePullPolicy: IfNotPresent #look for locally present image, if not present in gcp artifact repo
+        image: us-central1-docker.pkg.dev/mlopshrp/my-repo/cpsapp:latest
+        ports:
+        - containerPort: 8080
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: CPSapp
+spec:
+  selector:
+    app: CPSapp
+  ports:
+  - protocol: TCP
+  - port: 80
+    targetPort: 8080
+type: LoadBalancer

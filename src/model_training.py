@@ -38,15 +38,13 @@ class ModelTraining:
         
     def  train_model(self,params,hyperparameter_tunning=False):
         try:
-            self.load_data()
             self.model = GradientBoostingClassifier(**params)
             self.model.fit(self.X_train,self.y_train)
 
             if not hyperparameter_tunning:
                 joblib.dump(self.model , os.path.join(self.model_dir , "model.pkl"))
                 logger.info(f"Base model is save in {self.model_dir}")
-
-            logger.info("Model trained and saved sucesfully...")
+                logger.info("Model trained and saved sucesfully...")
 
         except Exception as e:
             logger.error(f"Error while training model {e}")
@@ -91,8 +89,10 @@ class ModelTraining:
         self.load_data()
         self.train_model(params,hyperparameter_tunning)
         roc_auc, model, signature = self.evaluate_model(hyperparameter_tunning)
-        if return_model:return roc_auc
-        else:roc_auc, model, signature
+        if not return_model:
+            return roc_auc
+        else:
+            return roc_auc, model, signature
         
 if __name__=="__main__":
     import argparse
