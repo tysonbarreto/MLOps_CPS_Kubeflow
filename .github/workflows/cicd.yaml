@@ -9,7 +9,7 @@ jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
         container:
-            image: google/cloud-sdk:489.0.0-stable
+            image: google/cloud-sdk:latest
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
             - name: Configure GCloud
               run: |
                 gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-                gcloud auth configure-docker ${{ secrets.GCLOUD_DOCKER_CONFIG }}
+                gcloud auth configure-docker ${{ secrets.GCLOUD_DOCKER_CONFIG }} gcr.io
 
             - name: Building and Pushing Image to GCloud Artifact Repo
               run: |
