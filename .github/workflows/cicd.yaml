@@ -19,9 +19,6 @@ jobs:
               uses: google-github-actions/auth@v1
               with:
                 credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-            - name: 🐳 Install Docker
-              uses: docker/setup-docker@v2
             
             - name: Configure GCloud
               run: |
