@@ -22,7 +22,7 @@ jobs:
             - name: Configure GCloud
               run: |
                 gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-                gcloud auth configure-docker ${{ secrets.GCLOUD_DOCKER_CONFIG }}
+                gcloud auth configure-docker ${{ secrets.GCLOUD_DOCKER_CONFIG }} -y
 
             - name: Building and Pushing Image to GCloud Artifact Repo
               run: |
