@@ -12,6 +12,9 @@ jobs:
             image: google/cloud-sdk:496.0.0-stable
 
         steps:
+            - name: Set up Docker
+              uses: docker/setup-docker-action@v4
+                
             - name: Checkout Repository
               uses: actions/checkout@v4
 
