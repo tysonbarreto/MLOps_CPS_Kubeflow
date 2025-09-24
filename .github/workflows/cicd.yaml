@@ -67,13 +67,11 @@ jobs:
 
     - name: 📦 Configure Docker to use Artifact Registry
       run: |
-        gcloud auth configure-docker ${{
-          secrets.ARTIFACT_REPO_DOMAIN
-        }}
+        gcloud auth configure-docker ${{ secrets.ARTIFACT_REPO_LINK }}
 
     - name: 🏗️ Build and Push Docker Image
       run: |
-        IMAGE_URI=${{ secrets.ARTIFACT_REPO_DOMAIN }}/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/${{ secrets.DEPLOYMENT_NAME }}:$GITHUB_SHA
+        IMAGE_URI=${{ secrets.ARTIFACT_REPO_LINK }}/${{ secrets.DEPLOYMENT_NAME }}:$GITHUB_SHA
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
 
@@ -89,7 +87,7 @@ jobs:
         kubectl set image deployment/${{ secrets.DEPLOYMENT_NAME }} \
           ${{
             secrets.DEPLOYMENT_NAME
-          }}=${{ secrets.ARTIFACT_REPO_DOMAIN }}/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/${{ secrets.DEPLOYMENT_NAME }}:$GITHUB_SHA
+          }}=${{ secrets.ARTIFACT_REPO_LINK }}/${{ secrets.DEPLOYMENT_NAME }}:$GITHUB_SHA
         kubectl rollout status deployment/${{ secrets.DEPLOYMENT_NAME }}
 
 
