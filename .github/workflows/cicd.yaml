@@ -9,7 +9,7 @@ jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
         container:
-            image: google/cloud-sdk:latest
+            image: google/cloud-sdk:496.0.0-stable
 
         steps:
             - name: Checkout Repository
@@ -20,8 +20,8 @@ jobs:
               with:
                 credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-            - name: Check Docker Version
-              run: docker --version
+            - name: 🐳 Install Docker
+              uses: docker/setup-docker@v2
             
             - name: Configure GCloud
               run: |
