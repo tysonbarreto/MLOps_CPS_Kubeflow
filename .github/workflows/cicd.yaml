@@ -9,7 +9,7 @@ jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
         container:
-            image: google/cloud:latest
+            image: google/cloud-sdk:489.0.0-stable
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v2
